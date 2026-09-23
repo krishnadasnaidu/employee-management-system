@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Employee Records</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+<!-- ================================================================
+     TOAST NOTIFICATIONS
+     ================================================================ -->
+
+<div
+    id="toast-stack"
+    class="toast-stack"
+    aria-live="polite"
+></div>
+
+
+<div class="app">
+
+
+    <!-- ============================================================
+         SIDEBAR
+         ============================================================ -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <span class="brand-mark">
+                EM
+            </span>
+
+            <span class="brand-name">
+                Employee Records
+            </span>
+
+        </div>
+
+
+        <nav class="nav">
+
+            <button
+                class="nav-item is-active"
+                data-view="dashboard"
+                type="button"
+            >
+                Dashboard
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="employees"
+                type="button"
+            >
+                Employees
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="add"
+                type="button"
+            >
+                Add employee
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="api-status">
+
+                <span
+                    class="status-dot"
+                    id="api-status-dot"
+                ></span>
+
+                <span id="api-status-text">
+                    Checking API...
+                </span>
+
+            </div>
+
+
+            <div
+                class="api-base"
+                title="Backend base URL"
+            >
+                localhost:8080/api/employees
+            </div>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- ============================================================
+         MAIN
+         ============================================================ -->
+
+    <main class="main">
+
+
+        <!-- ========================================================
+             DASHBOARD
+             ======================================================== -->
+
+        <section
+            class="view is-active"
+            id="view-dashboard"
+        >
+
+            <header class="view-header">
+
+                <h1>
+                    Dashboard
+                </h1>
+
+                <p class="view-sub">
+                    A snapshot of the current employee records.
+                </p>
+
+            </header>
+
+
+            <!-- Statistics -->
+
+            <div class="stat-grid">
+
+                <div class="stat-block">
+
+                    <span class="stat-label">
+                        Total employees
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="stat-total"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="stat-block">
+
+                    <span class="stat-label">
+                        Active
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="stat-active"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="stat-block">
+
+                    <span class="stat-label">
+                        On leave
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="stat-onleave"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="stat-block">
+
+                    <span class="stat-label">
+                        Inactive
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="stat-inactive"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Department breakdown -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <h2>
+                        Departments
+                    </h2>
+
+                </div>
+
+
+                <div
+                    id="dept-breakdown"
+                    class="dept-breakdown"
+                >
+
+                    <p class="empty-hint">
+                        Loading...
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Delete all -->
+
+            <div class="panel panel-danger">
+
+                <div class="panel-header">
+
+                    <h2>
+                        Danger zone
+                    </h2>
+
+                </div>
+
+
+                <div class="danger-row">
+
+                    <div>
+
+                        <p class="danger-title">
+                            Delete all employees
+                        </p>
+
+                        <p class="danger-copy">
+                            Permanently removes every record
+                            from the database.
+                            This cannot be undone.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="btn btn-danger-outline"
+                        id="btn-delete-all"
+                        type="button"
+                    >
+                        Delete all
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ========================================================
+             EMPLOYEES
+             ======================================================== -->
+
+        <section
+            class="view"
+            id="view-employees"
+        >
+
+            <header class="view-header">
+
+                <h1>
+                    Employees
+                </h1>
+
+                <p class="view-sub">
+                    Search, filter, sort, and manage employee records.
+                </p>
+
+            </header>
+
+
+            <!-- ====================================================
+                 SEARCH AND FILTERS
+                 ==================================================== -->
+
+            <div class="panel employee-controls">
+
+
+                <!-- Main search -->
+
+                <div class="search-main">
+
+                    <label for="employee-search">
+                        Search employees
+                    </label>
+
+
+                    <div class="search-row">
+
+                        <input
+                            type="search"
+                            id="employee-search"
+                            placeholder="Search by ID, name, email or department..."
+                            autocomplete="off"
+                        >
+
+
+                        <button
+                            class="btn btn-primary"
+                            id="btn-search"
+                            type="button"
+                        >
+                            Search
+                        </button>
+
+
+                        <button
+                            class="btn btn-ghost"
+                            id="btn-clear-filters"
+                            type="button"
+                        >
+                            Clear
+                        </button>
+
+                    </div>
+
+
+                    <span class="field-hint">
+                        Search by employee ID, first name,
+                        last name, email, or department.
+                    </span>
+
+                </div>
+
+
+
+                <!-- Advanced filters -->
+
+                <div class="advanced-filters">
+
+
+                    <!-- Department -->
+
+                    <div class="filter-group">
+
+                        <label for="f-department">
+                            Department
+                        </label>
+
+
+                        <select id="f-department">
+
+                            <option value="">
+                                All departments
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- Status -->
+
+                    <div class="filter-group">
+
+                        <label for="f-status">
+                            Status
+                        </label>
+
+
+                        <select id="f-status">
+
+                            <option value="">
+                                All statuses
+                            </option>
+
+                            <option value="ACTIVE">
+                                Active
+                            </option>
+
+                            <option value="INACTIVE">
+                                Inactive
+                            </option>
+
+                            <option value="ON_LEAVE">
+                                On leave
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- Sort field -->
+
+                    <div class="filter-group">
+
+                        <label for="sort-field">
+                            Sort by
+                        </label>
+
+
+                        <select id="sort-field">
+
+                            <option value="">
+                                Default order
+                            </option>
+
+                            <option value="id">
+                                Employee ID
+                            </option>
+
+                            <option value="name">
+                                Name
+                            </option>
+
+                            <option value="email">
+                                Email
+                            </option>
+
+                            <option value="department">
+                                Department
+                            </option>
+
+                            <option value="salary">
+                                Salary
+                            </option>
+
+                            <option value="dateOfJoining">
+                                Date of joining
+                            </option>
+
+                            <option value="status">
+                                Status
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- Sort direction -->
+
+                    <div class="filter-group">
+
+                        <label for="sort-direction">
+                            Order
+                        </label>
+
+
+                        <select id="sort-direction">
+
+                            <option value="asc">
+                                Ascending ↑
+                            </option>
+
+                            <option value="desc">
+                                Descending ↓
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ====================================================
+                 EMPLOYEE RECORDS
+                 ==================================================== -->
+
+            <div class="panel">
+
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>
+                            Employee records
+                        </h2>
+
+
+                        <span
+                            class="record-count"
+                            id="record-count"
+                        >
+                            0 records
+                        </span>
+
+                    </div>
+
+
+                    <div class="table-summary">
+
+                        <span id="page-summary">
+                            Showing 0-0 of 0
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Loading -->
+
+                <div
+                    id="employee-loading"
+                    class="loading-state"
+                    hidden
+                >
+
+                    <span class="spinner"></span>
+
+                    <span>
+                        Loading employees...
+                    </span>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     TABLE
+                     ================================================= -->
+
+                <div class="table-wrap">
+
+                    <table class="employee-table">
+
+
+                        <thead>
+
+                            <tr>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="id"
+                                    >
+                                        ID
+                                    </button>
+
+                                </th>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="name"
+                                    >
+                                        Name
+                                    </button>
+
+                                </th>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="email"
+                                    >
+                                        Email
+                                    </button>
+
+                                </th>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="department"
+                                    >
+                                        Department
+                                    </button>
+
+                                </th>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="salary"
+                                    >
+                                        Salary
+                                    </button>
+
+                                </th>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="dateOfJoining"
+                                    >
+                                        Date of joining
+                                    </button>
+
+                                </th>
+
+
+                                <th>
+
+                                    <button
+                                        class="table-sort-btn"
+                                        type="button"
+                                        data-sort="status"
+                                    >
+                                        Status
+                                    </button>
+
+                                </th>
+
+
+                                <th class="col-actions">
+                                    Actions
+                                </th>
+
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody id="employee-tbody">
+
+                            <tr>
+
+                                <td
+                                    colspan="8"
+                                    class="empty-hint"
+                                >
+                                    Loading employees...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     EMPTY STATE
+                     ================================================= -->
+
+                <div
+                    id="employee-empty"
+                    class="empty-state"
+                    hidden
+                >
+
+                    <div class="empty-state-icon">
+                        ⌕
+                    </div>
+
+
+                    <h3>
+                        No employees found
+                    </h3>
+
+
+                    <p>
+                        No employee records match
+                        your current search or filters.
+                    </p>
+
+
+                    <button
+                        class="btn btn-secondary"
+                        id="btn-empty-clear"
+                        type="button"
+                    >
+                        Clear search and filters
+                    </button>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     PAGINATION
+                     ================================================= -->
+
+                <div class="pagination">
+
+
+                    <div class="page-size">
+
+                        <label for="page-size">
+                            Rows per page
+                        </label>
+
+
+                        <select id="page-size">
+
+                            <option value="10">
+                                10
+                            </option>
+
+                            <option value="20">
+                                20
+                            </option>
+
+                            <option value="50">
+                                50
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <div class="pagination-controls">
+
+
+                        <button
+                            class="btn btn-ghost"
+                            id="btn-prev-page"
+                            type="button"
+                        >
+                            ← Previous
+                        </button>
+
+
+                        <div
+                            id="page-numbers"
+                            class="page-numbers"
+                        ></div>
+
+
+                        <button
+                            class="btn btn-ghost"
+                            id="btn-next-page"
+                            type="button"
+                        >
+                            Next →
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ========================================================
+             ADD EMPLOYEE
+             ======================================================== -->
+
+        <section
+            class="view"
+            id="view-add"
+        >
+
+            <header class="view-header">
+
+                <h1>
+                    Add employee
+                </h1>
+
+                <p class="view-sub">
+                    Create a single record,
+                    or add several at once.
+                </p>
+
+            </header>
+
+
+
+            <!-- Tabs -->
+
+            <div class="tab-row">
+
+                <button
+                    class="tab-btn is-active"
+                    data-tab="single"
+                    type="button"
+                >
+                    Single employee
+                </button>
+
+
+                <button
+                    class="tab-btn"
+                    data-tab="bulk"
+                    type="button"
+                >
+                    Bulk add
+                </button>
+
+            </div>
+
+
+
+            <!-- ====================================================
+                 SINGLE EMPLOYEE FORM
+                 ==================================================== -->
+
+            <form
+                class="panel form-panel tab-pane is-active"
+                id="add-form"
+                data-tab-pane="single"
+                novalidate
+            >
+
+
+                <div
+                    id="add-form-errors"
+                    class="form-error-box"
+                    hidden
+                ></div>
+
+
+                <div class="form-grid">
+
+
+                    <!-- First name -->
+
+                    <div class="field">
+
+                        <label for="add-firstName">
+                            First name
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="add-firstName"
+                            name="firstName"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="firstName"
+                        ></span>
+
+                    </div>
+
+
+
+                    <!-- Last name -->
+
+                    <div class="field">
+
+                        <label for="add-lastName">
+                            Last name
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="add-lastName"
+                            name="lastName"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="lastName"
+                        ></span>
+
+                    </div>
+
+
+
+                    <!-- Email -->
+
+                    <div class="field">
+
+                        <label for="add-email">
+                            Email
+                        </label>
+
+
+                        <input
+                            type="email"
+                            id="add-email"
+                            name="email"
+                            required
+                        >
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="email"
+                        ></span>
+
+                    </div>
+
+
+
+                    <!-- Department -->
+
+                    <div class="field">
+
+                        <label for="add-department">
+                            Department
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="add-department"
+                            name="department"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                            list="department-suggestions"
+                        >
+
+
+                        <datalist id="department-suggestions">
+
+                            <option value="Engineering"></option>
+
+                            <option value="Sales"></option>
+
+                            <option value="Marketing"></option>
+
+                            <option value="HR"></option>
+
+                            <option value="Finance"></option>
+
+                            <option value="Operations"></option>
+
+                        </datalist>
+
+
+                        <span class="field-hint">
+                            Free text department.
+                        </span>
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="department"
+                        ></span>
+
+                    </div>
+
+
+
+                    <!-- Salary -->
+
+                    <div class="field">
+
+                        <label for="add-salary">
+                            Salary
+                        </label>
+
+
+                        <input
+                            type="number"
+                            id="add-salary"
+                            name="salary"
+                            required
+                            min="0"
+                            step="0.01"
+                        >
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="salary"
+                        ></span>
+
+                    </div>
+
+
+
+                    <!-- Date -->
+
+                    <div class="field">
+
+                        <label for="add-dateOfJoining">
+                            Date of joining
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="add-dateOfJoining"
+                            name="dateOfJoining"
+                            required
+                        >
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="dateOfJoining"
+                        ></span>
+
+                    </div>
+
+
+
+                    <!-- Status -->
+
+                    <div class="field">
+
+                        <label for="add-status">
+                            Status
+                        </label>
+
+
+                        <select
+                            id="add-status"
+                            name="status"
+                            required
+                        >
+
+                            <option value="">
+                                Select status...
+                            </option>
+
+                            <option value="ACTIVE">
+                                Active
+                            </option>
+
+                            <option value="INACTIVE">
+                                Inactive
+                            </option>
+
+                            <option value="ON_LEAVE">
+                                On leave
+                            </option>
+
+                        </select>
+
+
+                        <span
+                            class="field-error"
+                            data-error-for="status"
+                        ></span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="add-submit-btn"
+                    >
+                        Create employee
+                    </button>
+
+
+                    <button
+                        type="reset"
+                        class="btn btn-ghost"
+                    >
+                        Clear form
+                    </button>
+
+                </div>
+
+            </form>
+
+
+
+            <!-- ====================================================
+                 BULK EMPLOYEE FORM
+                 ==================================================== -->
+
+            <form
+                class="panel form-panel tab-pane"
+                id="bulk-form"
+                data-tab-pane="bulk"
+                novalidate
+            >
+
+
+                <div
+                    id="bulk-form-errors"
+                    class="form-error-box"
+                    hidden
+                ></div>
+
+
+                <div class="field field-wide">
+
+                    <label for="bulk-json">
+                        Employees (JSON array)
+                    </label>
+
+
+                    <textarea
+                        id="bulk-json"
+                        rows="10"
+                        spellcheck="false"
+                        placeholder='[
+  {
+    "firstName": "Rahul",
+    "lastName": "Verma",
+    "email": "rahul.verma@example.com",
+    "department": "Sales",
+    "salary": 55000,
+    "dateOfJoining": "2023-06-01",
+    "status": "ACTIVE"
+  }
+]'
+                    ></textarea>
+
+
+                    <span class="field-hint">
+                        Sends to POST /api/employees/bulk.
+                    </span>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="bulk-submit-btn"
+                    >
+                        Create employees
+                    </button>
+
+
+                    <button
+                        type="reset"
+                        class="btn btn-ghost"
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<!-- ================================================================
+     VIEW EMPLOYEE MODAL
+     ================================================================ -->
+
+<div
+    class="modal-overlay"
+    id="modal-view"
+    hidden
+>
+
+    <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="view-modal-title"
+    >
+
+        <div class="modal-header">
+
+            <h2 id="view-modal-title">
+                Employee details
+            </h2>
+
+
+            <button
+                class="modal-close"
+                data-close-modal="modal-view"
+                aria-label="Close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <dl
+                class="detail-list"
+                id="view-detail-list"
+            ></dl>
+
+
+            <div class="links-block">
+
+                <h3>
+                    API links (HATEOAS)
+                </h3>
+
+
+                <ul
+                    class="link-list"
+                    id="view-links-list"
+                >
+
+                    <li class="empty-hint">
+                        No links returned by the API.
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================================
+     EDIT EMPLOYEE MODAL - PUT
+     ================================================================ -->
+
+<div
+    class="modal-overlay"
+    id="modal-edit"
+    hidden
+>
+
+    <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-modal-title"
+    >
+
+        <div class="modal-header">
+
+            <h2 id="edit-modal-title">
+                Edit employee
+            </h2>
+
+
+            <button
+                class="modal-close"
+                data-close-modal="modal-edit"
+                aria-label="Close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <p class="modal-sub">
+                Full update — every field is sent
+                to PUT /api/employees/{id}.
+            </p>
+
+
+            <form
+                id="edit-form"
+                novalidate
+            >
+
+                <input
+                    type="hidden"
+                    id="edit-id"
+                >
+
+
+                <div
+                    id="edit-form-errors"
+                    class="form-error-box"
+                    hidden
+                ></div>
+
+
+                <div class="form-grid">
+
+
+                    <div class="field">
+
+                        <label for="edit-firstName">
+                            First name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit-firstName"
+                            name="firstName"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="firstName"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="edit-lastName">
+                            Last name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit-lastName"
+                            name="lastName"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="lastName"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="edit-email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="edit-email"
+                            name="email"
+                            required
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="email"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="edit-department">
+                            Department
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit-department"
+                            name="department"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="department"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="edit-salary">
+                            Salary
+                        </label>
+
+                        <input
+                            type="number"
+                            id="edit-salary"
+                            name="salary"
+                            required
+                            min="0"
+                            step="0.01"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="salary"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="edit-dateOfJoining">
+                            Date of joining
+                        </label>
+
+                        <input
+                            type="date"
+                            id="edit-dateOfJoining"
+                            name="dateOfJoining"
+                            required
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="dateOfJoining"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="edit-status">
+                            Status
+                        </label>
+
+                        <select
+                            id="edit-status"
+                            name="status"
+                            required
+                        >
+
+                            <option value="ACTIVE">
+                                Active
+                            </option>
+
+                            <option value="INACTIVE">
+                                Inactive
+                            </option>
+
+                            <option value="ON_LEAVE">
+                                On leave
+                            </option>
+
+                        </select>
+
+                        <span
+                            class="field-error"
+                            data-error-for="status"
+                        ></span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="edit-submit-btn"
+                    >
+                        Save changes
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-ghost"
+                        data-close-modal="modal-edit"
+                    >
+                        Cancel
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================================
+     PATCH EMPLOYEE MODAL
+     ================================================================ -->
+
+<div
+    class="modal-overlay"
+    id="modal-patch"
+    hidden
+>
+
+    <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="patch-modal-title"
+    >
+
+        <div class="modal-header">
+
+            <h2 id="patch-modal-title">
+                Update fields
+            </h2>
+
+
+            <button
+                class="modal-close"
+                data-close-modal="modal-patch"
+                aria-label="Close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <p class="modal-sub">
+                Partial update — leave a field blank
+                to keep its current value.
+                Only filled fields are sent to
+                PATCH /api/employees/{id}.
+            </p>
+
+
+            <form
+                id="patch-form"
+                novalidate
+            >
+
+                <input
+                    type="hidden"
+                    id="patch-id"
+                >
+
+
+                <div
+                    id="patch-form-errors"
+                    class="form-error-box"
+                    hidden
+                ></div>
+
+
+                <div class="form-grid">
+
+
+                    <div class="field">
+
+                        <label for="patch-firstName">
+                            First name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="patch-firstName"
+                            name="firstName"
+                            placeholder="Unchanged"
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="firstName"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="patch-lastName">
+                            Last name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="patch-lastName"
+                            name="lastName"
+                            placeholder="Unchanged"
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="lastName"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="patch-email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="patch-email"
+                            name="email"
+                            placeholder="Unchanged"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="email"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="patch-department">
+                            Department
+                        </label>
+
+                        <input
+                            type="text"
+                            id="patch-department"
+                            name="department"
+                            placeholder="Unchanged"
+                            minlength="2"
+                            maxlength="50"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="department"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="patch-salary">
+                            Salary
+                        </label>
+
+                        <input
+                            type="number"
+                            id="patch-salary"
+                            name="salary"
+                            placeholder="Unchanged"
+                            min="0"
+                            step="0.01"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="salary"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="patch-dateOfJoining">
+                            Date of joining
+                        </label>
+
+                        <input
+                            type="date"
+                            id="patch-dateOfJoining"
+                            name="dateOfJoining"
+                        >
+
+                        <span
+                            class="field-error"
+                            data-error-for="dateOfJoining"
+                        ></span>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="patch-status">
+                            Status
+                        </label>
+
+                        <select
+                            id="patch-status"
+                            name="status"
+                        >
+
+                            <option value="">
+                                Unchanged
+                            </option>
+
+                            <option value="ACTIVE">
+                                Active
+                            </option>
+
+                            <option value="INACTIVE">
+                                Inactive
+                            </option>
+
+                            <option value="ON_LEAVE">
+                                On leave
+                            </option>
+
+                        </select>
+
+                        <span
+                            class="field-error"
+                            data-error-for="status"
+                        ></span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="patch-submit-btn"
+                    >
+                        Apply update
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-ghost"
+                        data-close-modal="modal-patch"
+                    >
+                        Cancel
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================================
+     DELETE EMPLOYEE MODAL
+     ================================================================ -->
+
+<div
+    class="modal-overlay"
+    id="modal-delete"
+    hidden
+>
+
+    <div
+        class="modal modal-small"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-modal-title"
+    >
+
+        <div class="modal-header">
+
+            <h2 id="delete-modal-title">
+                Delete employee
+            </h2>
+
+
+            <button
+                class="modal-close"
+                data-close-modal="modal-delete"
+                aria-label="Close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <p id="delete-confirm-copy">
+                Are you sure you want to delete
+                this employee?
+            </p>
+
+
+            <div class="form-actions">
+
+                <button
+                    class="btn btn-danger"
+                    id="delete-confirm-btn"
+                    type="button"
+                >
+                    Delete
+                </button>
+
+
+                <button
+                    class="btn btn-ghost"
+                    data-close-modal="modal-delete"
+                    type="button"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================================
+     DELETE ALL MODAL
+     ================================================================ -->
+
+<div
+    class="modal-overlay"
+    id="modal-delete-all"
+    hidden
+>
+
+    <div
+        class="modal modal-small"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-all-modal-title"
+    >
+
+        <div class="modal-header">
+
+            <h2 id="delete-all-modal-title">
+                Delete all employees
+            </h2>
+
+
+            <button
+                class="modal-close"
+                data-close-modal="modal-delete-all"
+                aria-label="Close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <p>
+                This permanently removes
+                <strong>every</strong>
+                employee record.
+                Type <strong>DELETE</strong>
+                below to confirm.
+            </p>
+
+
+            <input
+                type="text"
+                id="delete-all-confirm-input"
+                class="confirm-input"
+                placeholder="Type DELETE to confirm"
+                autocomplete="off"
+            >
+
+
+            <div class="form-actions">
+
+                <button
+                    class="btn btn-danger"
+                    id="delete-all-confirm-btn"
+                    disabled
+                    type="button"
+                >
+                    Delete all
+                </button>
+
+
+                <button
+                    class="btn btn-ghost"
+                    data-close-modal="modal-delete-all"
+                    type="button"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================================
+     JAVASCRIPT
+     ================================================================ -->
+
+<script src="js/app.js"></script>
+
+</body>
+
+</html>
