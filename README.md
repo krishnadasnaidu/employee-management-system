@@ -10,7 +10,7 @@ A web-based Employee Management System with a frontend built using HTML, CSS, an
 - Spring Data JPA
 - Hibernate
 - REST API
-- H2 Database
+- MySQL Database
 - Maven
 
 ### Frontend
