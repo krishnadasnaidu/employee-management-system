@@ -64,4 +64,4 @@ Service Layer
 Repository Layer
    |
    v
-H2 Database
+MySQL Database
